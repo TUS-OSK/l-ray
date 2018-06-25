@@ -16,8 +16,9 @@ int main() {
             double v = (2.0*j - img.height)/img.height;
             Ray ray = cam.getRay(u, v);
 
-            if(sphere.intersect(ray)) {
-                img.setPixel(i, j, Vec3(1, 1, 1));
+            Hit hit;
+            if(sphere.intersect(ray, hit)) {
+                img.setPixel(i, j, (hit.hitNormal + Vec3(1, 1, 1))/2.0);
             }
             else {
                 img.setPixel(i, j, Vec3(0, 0, 0));

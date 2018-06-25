@@ -3,6 +3,7 @@
 #include <cmath>
 #include "vec3.h"
 #include "ray.h"
+#include "hit.h"
 class Sphere {
     public:
         Vec3 center; //中心位置
@@ -12,7 +13,7 @@ class Sphere {
         Sphere(const Vec3& center, double radius) : center(center), radius(radius) {};
 
         //与えられたRayが球に衝突するかどうか判定する
-        bool intersect(const Ray& ray) const {
+        bool intersect(const Ray& ray, Hit& hit) const {
             double d_norm = ray.direction.length();
             double oc_norm = (ray.origin - center).length();
 
@@ -35,6 +36,11 @@ class Sphere {
                 t = t2;
                 if(t < 0) return false;
             }
+
+            //衝突情報を格納する
+            hit.t = t;
+            hit.hitPos = ray.origin + t*ray.direction;
+            hit.hitNormal = normalize(hit.hitPos - center);
 
             return true;
         };
