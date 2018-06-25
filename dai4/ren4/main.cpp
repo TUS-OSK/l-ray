@@ -35,8 +35,6 @@ Vec3 randomHemisphere(const Vec3& n) {
 
 //物体集合
 Accel accel;
-//光源の方向
-Vec3 lightDir = normalize(Vec3(1, 1, -1));
 
 
 //与えられたrayの方向から来る光の強さを計算する
