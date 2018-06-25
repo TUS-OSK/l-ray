@@ -6,6 +6,7 @@ class Vec3 {
         double y; //y成分
         double z; //z成分
 
+        //コンストラクタ
         Vec3() {
             x = y = z = 0;
         };
@@ -59,6 +60,7 @@ class Ray {
         Vec3 origin; //始点
         Vec3 direction; //方向
 
+        //コンストラクタ
         Ray(const Vec3& origin, const Vec3& direction) : origin(origin), direction(direction) {};
 };
 
@@ -68,6 +70,7 @@ class Sphere {
         Vec3 center; //中心位置
         double radius; //半径
 
+        //コンストラクタ
         Sphere(const Vec3& center, double radius) : center(center), radius(radius) {};
 
         //与えられたRayが球に衝突するかどうか判定する
