@@ -1,5 +1,6 @@
 #ifndef VEC3_H
 #define VEC3_H
+#include <iostream>
 #include <cmath>
 class Vec3 {
     public:
@@ -20,6 +21,11 @@ class Vec3 {
         //ベクトルの長さを返す
         double length() const {
             return std::sqrt(x*x + y*y + z*z);
+        };
+
+        //ターミナルに出力する
+        void print() const {
+            std::cout << "(" << x << ", " << y << ", " << z << ")" << std::endl;
         };
 };
 
