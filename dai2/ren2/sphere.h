@@ -20,7 +20,10 @@ class Sphere {
             double a = d_norm*d_norm;
             double b = 2*dot(ray.direction, ray.origin - center);
             double c = oc_norm*oc_norm - radius*radius;
+
+            //判別式
             double D = b*b - 4*a*c;
+            if(D < 0) return false;
 
             //解の候補
             double t1 = (-b - std::sqrt(D))/(2*a);
