@@ -31,6 +31,22 @@ Vec3 randomHemisphere(const Vec3& n) {
   
   return x*xv + y*n + z*zv;
 }
+//半球面でのコサインに比例したランダムな方向を返す
+Vec3 randomCosineHemisphere(double &pdf, const Vec3& n) {
+    double u = rnd();
+    double v = rnd();
+
+    double theta = 0.5*std::acos(1 - 2*u);
+    double phi = 2*M_PI*v;
+    pdf = 1/M_PI * std::cos(theta);
+
+    double x = std::cos(phi)*std::sin(theta);
+    double y = std::cos(theta);
+    double z = std::sin(phi)*std::sin(theta);
+    Vec3 xv, zv;
+    orthonormalBasis(n, xv, zv);
+    return x*xv + y*n + z*zv;
+}
 
 
 //物体集合
@@ -48,11 +64,12 @@ Vec3 getColor(const Ray& ray, int depth = 0) {
         //Diffuse
         if(hit.hitSphere->material == 0) {
             //反射レイを生成
-            Ray nextRay(hit.hitPos + 0.001*hit.hitNormal, randomHemisphere(hit.hitNormal));
+            double pdf;
+            Ray nextRay(hit.hitPos + 0.001*hit.hitNormal, randomCosineHemisphere(pdf, hit.hitNormal));
+
             //コサイン項
             double cos_term = std::max(dot(nextRay.direction, hit.hitNormal), 0.0);
-            //pdf
-            double pdf = 1/(2*M_PI);
+
             return 1/pdf * cos_term * hit.hitSphere->color/M_PI * getColor(nextRay, depth + 1);
         }
         //Mirror
