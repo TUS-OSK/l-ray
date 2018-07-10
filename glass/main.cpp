@@ -49,6 +49,14 @@ Vec3 randomCosineHemisphere(double &pdf, const Vec3& n) {
 }
 
 
+//フレネル項
+double fresnel(const Vec3& d, const Vec3& n, double n1, double n2) {
+    double f0 = std::pow((n1 - n2)/(n1 + n2), 2.0);
+    return f0 + (1 - f0)*std::pow(dot(-d, n), 5.0);
+}
+
+
+
 //物体集合
 Accel accel;
 
