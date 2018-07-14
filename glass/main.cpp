@@ -7,6 +7,7 @@
 #include "image.h"
 #include "camera.h"
 #include "accel.h"
+#include "util.h"
 
 
 std::random_device rnd_dev;
@@ -84,10 +85,43 @@ Vec3 getColor(const Ray& ray, int depth = 0) {
         else if(hit.hitSphere->material == 1) {
             //反射レイを生成
             Ray nextRay(hit.hitPos + 0.001*hit.hitNormal, reflect(ray.direction, hit.hitNormal));
-            return getColor(nextRay, depth + 1);
+            return hit.hitSphere->color * getColor(nextRay, depth + 1);
         }
         //Glass
         else if(hit.hitSphere->material == 2) {
+            //ガラスに入射しているか?
+            bool isEntering = dot(-ray.direction, hit.hitNormal) > 0;
+
+            //法線
+            Vec3 n = isEntering ? hit.hitNormal : -hit.hitNormal;
+            
+            //屈折率
+            double n1, n2;
+            n1 = isEntering ? 1.0 : 1.5;
+            n2 = isEntering ? 1.5 : 1.0;
+            double eta = n1/n2;
+
+            //フレネル項
+            double fr = fresnel(-ray.direction, n, n1, n2);
+
+            //反射
+            if(rnd() < fr) {
+                Ray nextRay(Vec3(hit.hitPos + 0.001*n), reflect(ray.direction, n));
+                return getColor(nextRay, depth + 1);
+            }
+            //屈折
+            else {
+                Vec3 wt;
+                if(refract(-ray.direction, n, n1, n2, wt)) {
+                    Ray nextRay(hit.hitPos - 0.001*n, wt);
+                    return eta*eta * getColor(nextRay, depth + 1);
+                }
+                //全反射
+                else {
+                    Ray nextRay(hit.hitPos + 0.001*n, reflect(ray.direction, n));
+                    return getColor(nextRay, depth + 1);
+                }
+            }
         }
         else {
             return Vec3(0, 0, 0);
@@ -95,24 +129,25 @@ Vec3 getColor(const Ray& ray, int depth = 0) {
     }
     //空の色
     else {
-        return Vec3(1, 1, 1);
+        return 5*Vec3(1, 1, 1) * std::pow(std::max(dot(ray.direction, normalize(Vec3(1, 1, 1))), 0.0), 64.0);
     }
 }
 
 
 int main() {
+    const int N = 1000;
     Image img(512, 512);
     Camera cam(Vec3(0, 0, -3), Vec3(0, 0, 1));
 
     //緑色の球
-    accel.add(std::make_shared<Sphere>(Vec3(0, 0, 0), 1.0, Vec3(0, 1, 0), 0));
+    accel.add(std::make_shared<Sphere>(Vec3(0, 0, 0), 1.0, Vec3(1, 1, 1), 2));
     //白色の床
     accel.add(std::make_shared<Sphere>(Vec3(0, -10001, 0), 10000, Vec3(0.8, 0.8, 0.8), 0));
 
     //100回のSSAA
-#pragma omp parallel for schedule(dynamic, 1)
-    for(int k = 0; k < 100; k++) {
+    for(int k = 0; k < N; k++) {
         for(int i = 0; i < img.width; i++) {
+#pragma omp parallel for schedule(dynamic, 1)
             for(int j = 0; j < img.height; j++) {
                 double u = (2.0*(i + rnd()) - img.width)/img.width;
                 double v = (2.0*(j + rnd()) - img.height)/img.height;
@@ -122,9 +157,10 @@ int main() {
                 Vec3 color = getColor(ray);
 
                 //画素に値を書き込む
-                img.setPixel(i, j, img.getPixel(i, j) + 1/100.0*color);
+                img.setPixel(i, j, img.getPixel(i, j) + 1.0/N*color);
             }
         }
+        std::cout << progressbar(k, N) << " " << percentage(k, N) << "\r" << std::flush;
     }
     img.gamma_correction();
     img.ppm_output();

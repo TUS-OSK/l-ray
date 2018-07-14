@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include "vec3.h"
+#include "util.h"
 class Image {
     public:
         int width; //横幅
@@ -37,9 +38,9 @@ class Image {
             for(int i = 0; i < height; i++) {
                 for(int j = 0; j < width; j++) {
                     Vec3 color = 255*this->getPixel(j, i);
-                    int r = (int)color.x;
-                    int g = (int)color.y;
-                    int b = (int)color.z;
+                    int r = clamp((int)color.x, 0, 255);
+                    int g = clamp((int)color.y, 0, 255);
+                    int b = clamp((int)color.z, 0, 255);
                     file << r << " " << g << " " << b << std::endl;
                 }
             }

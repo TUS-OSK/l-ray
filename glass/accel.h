@@ -22,15 +22,15 @@ class Accel {
             bool isHit = false;
 
             //hitの距離を大きな値で初期化しておく
-            hit.t = 10000;
+            hit.t = 1000000;
 
             //全ての物体に対し衝突計算をする
             Hit hit_each;
             for(auto p : spheres) {
                 if(p->intersect(ray, hit_each)) {
-                    isHit = true;
                     //衝突距離が短いものが見つかったらhitをそれで置き換える
                     if(hit_each.t < hit.t) {
+                        isHit = true;
                         hit = hit_each;
                     }
                 }

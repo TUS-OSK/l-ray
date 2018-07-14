@@ -17,6 +17,10 @@ class Vec3 {
             z = _z;
         };
 
+        Vec3 operator-() const {
+            return Vec3(-x, -y, -z);
+        };
+
         double length() const {
             return std::sqrt(x*x + y*y + z*z);
         };
@@ -68,6 +72,21 @@ Vec3 normalize(const Vec3& v) {
 
 Vec3 reflect(const Vec3& d, const Vec3& n) {
     return d - 2*dot(d, n)*n;
+}
+bool refract(const Vec3& wi, const Vec3& n, double ior1, double ior2, Vec3& wt) {
+    double eta = ior1/ior2;
+    //入射角のコサイン
+    double cosThetaI = dot(wi, n);
+    //入射角のサインの二乗
+    double sin2ThetaI = std::max(0.0, 1.0 - cosThetaI*cosThetaI);
+    //屈折角のサインの二乗
+    double sin2ThetaT = eta*eta*sin2ThetaI;
+    //全反射
+    if(sin2ThetaT >= 1.0) return false;
+    double cosThetaT = std::sqrt(1.0 - sin2ThetaT);
+    //屈折方向の計算
+    wt = eta*(-wi) + (eta*cosThetaI - cosThetaT)*n;
+    return true;
 }
 
 //nから正規直交基底を作る
